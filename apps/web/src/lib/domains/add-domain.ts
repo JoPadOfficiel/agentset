@@ -7,5 +7,11 @@ export const addDomainToVercel = async (domain: string) => {
     error?: { code: string; message: string };
   }>(`/v10/projects/${env.VERCEL_PROJECT_ID}/domains`, "POST", {
     name: domain.toLowerCase(),
+    ...(env.NEXT_PUBLIC_VERCEL_ENV === "preview"
+      ? {
+          customEnvironmentId: "preview",
+          gitBranch: "staging",
+        }
+      : {}),
   });
 };
