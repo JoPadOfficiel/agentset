@@ -82,4 +82,8 @@ export abstract class VectorStore<Filter = VectorFilter> {
   abstract deleteNamespace(): Promise<{ deleted?: number }>;
 
   abstract getDimensions(): Promise<number | "ANY">;
+
+  abstract warmCache(): Promise<"UNSUPPORTED" | void>;
+
+  abstract supportsKeyword(): boolean;
 }

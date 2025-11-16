@@ -1,25 +1,21 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useOrganization } from "@/hooks/use-organization";
 import { useTRPC } from "@/trpc/react";
+import { useRouter } from "@bprogress/next/app";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { CreditCardIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import type { Stripe } from "@agentset/stripe";
-import {
-  Badge,
-  Button,
-  Card,
-  CardDescription,
-  CardTitle,
-  cn,
-  DataWrapper,
-  EmptyState,
-  Separator,
-  Skeleton,
-} from "@agentset/ui";
+import { Badge } from "@agentset/ui/badge";
+import { Button } from "@agentset/ui/button";
+import { Card, CardDescription, CardTitle } from "@agentset/ui/card";
+import { cn } from "@agentset/ui/cn";
+import { DataWrapper } from "@agentset/ui/data-wrapper";
+import { EmptyState } from "@agentset/ui/empty-state";
+import { Separator } from "@agentset/ui/separator";
+import { Skeleton } from "@agentset/ui/skeleton";
 
 import { PaymentMethodTypesList } from "./payment-methods-types";
 

@@ -8,22 +8,17 @@ import { useQueryClient } from "@tanstack/react-query";
 import { PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 
-import { isProPlan } from "@agentset/stripe/plans";
+import { isFreePlan } from "@agentset/stripe/plans";
+import { Button } from "@agentset/ui/button";
 import {
-  Button,
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@agentset/ui";
+} from "@agentset/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@agentset/ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@agentset/ui/tooltip";
 
 import TextForm from "./text-form";
 import UploadForm from "./upload-form";
@@ -64,7 +59,7 @@ export function IngestModal() {
   // if it's not a pro plan, check if the user has exceeded the limit
   // pro plan is unlimited with usage based billing
   const isOverLimit =
-    !isProPlan(organization.plan) &&
+    isFreePlan(organization.plan) &&
     organization.totalPages >= organization.pagesLimit;
 
   return (

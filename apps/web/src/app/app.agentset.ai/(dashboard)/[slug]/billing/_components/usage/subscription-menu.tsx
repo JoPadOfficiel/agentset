@@ -1,20 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useOrganization } from "@/hooks/use-organization";
 import { useTRPC } from "@/trpc/react";
+import { useRouter } from "@bprogress/next/app";
 import { useMutation } from "@tanstack/react-query";
 import { CalendarSyncIcon, MoreVerticalIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
 
+import { Button } from "@agentset/ui/button";
 import {
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@agentset/ui";
+} from "@agentset/ui/dropdown-menu";
 
 export default function SubscriptionMenu() {
   const [isOpen, setIsOpen] = useState(false);

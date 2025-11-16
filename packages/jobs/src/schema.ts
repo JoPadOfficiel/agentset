@@ -2,11 +2,18 @@ import type { BatchItem } from "@trigger.dev/sdk";
 import { tasks } from "@trigger.dev/sdk";
 import { z } from "zod/v4";
 
+import { isEnterprisePlan, isProPlan } from "@agentset/stripe/plans";
 import {
   configSchema,
   EmbeddingConfigSchema,
   VectorStoreSchema,
 } from "@agentset/validation";
+
+const getPriorityByPlan = (plan: string) => {
+  if (isEnterprisePlan(plan)) return;
+  if (isProPlan(plan)) return 3600 * 24; // 24 hours
+  return 3600 * 16; // 16 hours
+};
 
 export const TRIGGER_INGESTION_JOB_ID = "trigger-ingestion-job";
 export const triggerIngestionJobBodySchema = z.object({
@@ -14,9 +21,11 @@ export const triggerIngestionJobBodySchema = z.object({
 });
 export const triggerIngestionJob = (
   body: z.infer<typeof triggerIngestionJobBodySchema>,
+  plan: string,
 ) =>
   tasks.trigger(TRIGGER_INGESTION_JOB_ID, body, {
     tags: [`job_${body.jobId}`],
+    priority: getPriorityByPlan(plan),
   });
 
 export const TRIGGER_DOCUMENT_JOB_ID = "trigger-document-job";
@@ -110,4 +119,9 @@ export const reIngestJobBodySchema = z.object({
 });
 export const triggerReIngestJob = (
   body: z.infer<typeof reIngestJobBodySchema>,
-) => tasks.trigger(RE_INGEST_JOB_ID, body, { tags: [`job_${body.jobId}`] });
+  plan: string,
+) =>
+  tasks.trigger(RE_INGEST_JOB_ID, body, {
+    tags: [`job_${body.jobId}`],
+    priority: getPriorityByPlan(plan),
+  });

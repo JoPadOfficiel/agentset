@@ -1,13 +1,15 @@
 "use client";
 
 import { useHosting } from "@/contexts/hosting-context";
+import { useChatProperty } from "ai-sdk-zustand";
 
-import { cn } from "@agentset/ui";
+import { cn } from "@agentset/ui/cn";
 
 import { MultimodalInput } from "./chat-input";
 import { Messages } from "./messages";
+import { Overview } from "./overview";
+import { SuggestedActions } from "./suggested-actions";
 import { useNamespaceChat } from "./use-chat";
-import { useHostingChat } from "./use-hosting-chat";
 
 export default function Chat({
   type = "playground",
@@ -19,42 +21,45 @@ export default function Chat({
 
 const PlaygroundChat = () => {
   useNamespaceChat();
+  const isEmpty = useChatProperty((s) => s.messages.length === 0);
 
   return (
-    <div
-      className={cn(
-        "bg-background flex min-w-0 flex-col",
-        "h-[calc(100dvh-calc(var(--spacing)*20))]",
+    <div className="bg-background flex h-[calc(100dvh-calc(var(--spacing)*20))] min-w-0 flex-col">
+      {isEmpty ? (
+        <div className="flex flex-1 items-center justify-center">
+          <Overview
+            title="Welcome to the playground"
+            description="Try chatting with your data here"
+          />
+        </div>
+      ) : (
+        <Messages />
       )}
-    >
-      <Messages />
 
-      <form className="bg-background mx-auto flex w-full gap-2 px-4 pb-4 md:max-w-3xl md:pb-6">
+      <div className="mx-auto flex w-full flex-col gap-4 px-4 pb-4 md:max-w-3xl md:pb-6">
         <MultimodalInput type="playground" />
-      </form>
+      </div>
     </div>
   );
 };
 
 const HostingChat = () => {
   const { exampleQuestions, welcomeMessage, logo } = useHosting();
-  useHostingChat();
+  const isEmpty = useChatProperty((s) => s.messages.length === 0);
 
   return (
     <div
       className={cn(
-        "bg-background flex min-w-0 flex-col",
-        "h-[calc(100dvh-64px)]",
+        "bg-background flex h-[calc(100dvh-64px)] min-w-0 flex-col",
+        isEmpty && "items-center justify-center",
       )}
     >
-      <Messages
-        overviewMessage={welcomeMessage ?? undefined}
-        logo={logo ?? undefined}
-      />
+      {isEmpty ? <Overview title={welcomeMessage} logo={logo} /> : <Messages />}
 
-      <form className="bg-background mx-auto flex w-full gap-2 px-4 pb-4 md:max-w-3xl md:pb-6">
-        <MultimodalInput type="hosted" exampleMessages={exampleQuestions} />
-      </form>
+      <div className="mx-auto flex w-full flex-col gap-4 px-4 pb-4 md:max-w-3xl md:pb-6">
+        <MultimodalInput type="hosted" />
+        <SuggestedActions exampleMessages={exampleQuestions} />
+      </div>
     </div>
   );
 };

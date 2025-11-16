@@ -14,6 +14,8 @@ import {
   PRO_PLAN_METERED,
 } from "@agentset/stripe/plans";
 
+import { revalidateOrganizationCache } from "./utils";
+
 export async function checkoutSessionCompleted(event: Stripe.Event) {
   const checkoutSession = event.data.object as Stripe.Checkout.Session;
 
@@ -37,11 +39,13 @@ export async function checkoutSessionCompleted(event: Stripe.Event) {
   );
 
   // ignore metered plan
-  const priceId = subscription.items.data.filter(
+  const price = subscription.items.data.filter(
     (item) =>
       item.price.lookup_key !== PRO_PLAN_METERED.monthly.lookupKey &&
       item.price.lookup_key !== PRO_PLAN_METERED.yearly.lookupKey,
-  )[0]?.price.id;
+  )[0]?.price;
+  const priceId = price?.id;
+  const period = price?.recurring?.interval === "month" ? "monthly" : "yearly";
   const plan = getPlanFromPriceId(priceId);
 
   if (!plan) {
@@ -72,6 +76,7 @@ export async function checkoutSessionCompleted(event: Stripe.Event) {
       ...planToOrganizationFields(plan),
     },
     select: {
+      slug: true,
       members: {
         select: {
           user: {
@@ -82,11 +87,13 @@ export async function checkoutSessionCompleted(event: Stripe.Event) {
           },
         },
         where: {
-          role: "owner",
+          OR: [{ role: "owner" }, { role: "admin" }],
         },
       },
     },
   });
+
+  revalidateOrganizationCache(organizationId);
 
   await Promise.allSettled([
     ...organization.members.map(({ user }) =>
@@ -107,6 +114,13 @@ export async function checkoutSessionCompleted(event: Stripe.Event) {
     ),
     triggerMeterOrgDocuments({
       organizationId,
+    }),
+    log({
+      message: `🎉 New ${plan.name} subscriber: 
+Period: \`${period}\`
+Organization: \`${organization.slug}\`
+Members: \`${organization.members.map(({ user }) => user.email).join(", ")}\``,
+      type: "subscribers",
     }),
   ]);
 }

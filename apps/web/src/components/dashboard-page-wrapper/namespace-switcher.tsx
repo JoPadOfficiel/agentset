@@ -1,21 +1,22 @@
 import { useState, useTransition } from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { useNamespace } from "@/hooks/use-namespace";
 import { useOrganization } from "@/hooks/use-organization";
 import { useTRPC } from "@/trpc/react";
+import { useRouter } from "@bprogress/next/app";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronsUpDownIcon, PlusIcon } from "lucide-react";
 
 import type { Namespace } from "@agentset/db";
+import { Button } from "@agentset/ui/button";
 import {
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  Skeleton,
-} from "@agentset/ui";
+} from "@agentset/ui/dropdown-menu";
+import { Skeleton } from "@agentset/ui/skeleton";
 
 import CreateNamespaceDialog from "../create-namespace";
 

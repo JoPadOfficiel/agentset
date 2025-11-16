@@ -23,16 +23,16 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVerticalIcon, PlusIcon, XIcon } from "lucide-react";
 import { useFieldArray } from "react-hook-form";
 
+import { Button } from "@agentset/ui/button";
+import { cn } from "@agentset/ui/cn";
 import {
-  Button,
-  cn,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-  Input,
-} from "@agentset/ui";
+} from "@agentset/ui/form";
+import { Input } from "@agentset/ui/input";
 
 // Virtual ID type for sortable items
 type VirtualId = string;
@@ -67,10 +67,10 @@ export default function SortableList<T extends object>({
 
   const handleAdd = () => {
     // Check if the last example is empty
-    const examplesQuestions = form.getValues(typedName);
-    const lastExample = examplesQuestions.at(-1);
-    if (lastExample === "") {
-      form.setError(`${typedName}.${examplesQuestions.length - 1}`, {
+    const values = form.getValues(typedName);
+    const lastValue = values.at(-1);
+    if (lastValue === "") {
+      form.setError(`${typedName}.${values.length - 1}`, {
         type: "manual",
         message: "Please fill in the current item before adding a new one",
       });

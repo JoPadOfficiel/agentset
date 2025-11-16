@@ -15,7 +15,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@agentset/ui";
+} from "@agentset/ui/dialog";
 import { toSlug } from "@agentset/utils";
 
 import CreateNamespaceDetailsStep from "./details-step";
@@ -117,7 +117,7 @@ export default function CreateNamespaceDialog({
         setOpen(newOpen);
       }}
     >
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-xl" scrollableOverlay>
         <DialogHeader>
           <DialogTitle>
             {step === "details"

@@ -98,6 +98,7 @@ export class Turbopuffer implements VectorStore<TurbopufferVectorFilter> {
         filters: filter,
         include_attributes: params.includeMetadata ? undefined : ["id", "text"],
         exclude_attributes: params.includeMetadata ? ["vector"] : undefined,
+        consistency: { level: "eventual" },
       };
 
       if (params.mode.type === "semantic" || params.mode.type === "keyword") {
@@ -154,16 +155,9 @@ export class Turbopuffer implements VectorStore<TurbopufferVectorFilter> {
       // Parse metadata to nodes
       return filterFalsy(
         results.map(({ id, $dist: distance, text, ...metadata }) => {
-          const node = metadataToChunk(metadata as VectorStoreMetadata);
           const finalMetadata = params.includeMetadata
-            ? node
-              ? node.metadata
-              : metadata
+            ? (metadata as VectorStoreMetadata)
             : undefined;
-          const finalRelationships =
-            params.includeRelationships && node
-              ? node.relationships
-              : undefined;
 
           return {
             id: id.toString(),
@@ -173,7 +167,7 @@ export class Turbopuffer implements VectorStore<TurbopufferVectorFilter> {
                 : undefined,
             text: text as string,
             metadata: finalMetadata,
-            relationships: finalRelationships,
+            // relationships: finalRelationships,
           };
         }),
       );
@@ -221,17 +215,39 @@ export class Turbopuffer implements VectorStore<TurbopufferVectorFilter> {
   }
 
   async deleteNamespace() {
-    await this.client.deleteAll();
-    return {};
+    try {
+      await this.client.deleteAll();
+      return {};
+    } catch (error) {
+      if (error instanceof TurbopufferClient.NotFoundError) return {};
+
+      throw error;
+    }
   }
 
   async deleteByFilter(filter: TurbopufferVectorFilter) {
     const translatedFilter = this.filterTranslator.translate(filter);
-    const result = await this.client.write({
-      delete_by_filter: translatedFilter ?? undefined,
-    });
 
-    return { deleted: result.rows_deleted || result.rows_affected };
+    try {
+      const result = await this.client.write({
+        delete_by_filter: translatedFilter ?? undefined,
+      });
+
+      return { deleted: result.rows_deleted || result.rows_affected };
+    } catch (error) {
+      if (error instanceof TurbopufferClient.NotFoundError) return {};
+
+      throw error;
+    }
+  }
+
+  async warmCache() {
+    try {
+      await this.client.hintCacheWarm();
+    } catch (error) {
+      if (error instanceof TurbopufferClient.NotFoundError) return;
+      throw error;
+    }
   }
 
   async getDimensions() {
@@ -248,5 +264,9 @@ export class Turbopuffer implements VectorStore<TurbopufferVectorFilter> {
     await test.deleteAll();
 
     return "ANY" as const;
+  }
+
+  supportsKeyword() {
+    return true;
   }
 }

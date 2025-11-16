@@ -5,9 +5,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 
+import { Button } from "@agentset/ui/button";
+import { CopyButton } from "@agentset/ui/copy-button";
 import {
-  Button,
-  CopyButton,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -15,14 +15,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  Input,
-  Label,
+} from "@agentset/ui/dialog";
+import { Input } from "@agentset/ui/input";
+import { Label } from "@agentset/ui/label";
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@agentset/ui";
+} from "@agentset/ui/select";
 
 export default function CreateApiKey({ orgId }: { orgId: string }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,7 +33,7 @@ export default function CreateApiKey({ orgId }: { orgId: string }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const { isPending, mutateAsync, data } = useMutation(
+  const { isPending, mutateAsync, data, reset } = useMutation(
     trpc.apiKey.createApiKey.mutationOptions({
       onSuccess: (newKey) => {
         logEvent("api_key_created", {
@@ -70,6 +72,12 @@ export default function CreateApiKey({ orgId }: { orgId: string }) {
       onOpenChange={(newOpen) => {
         if (isPending) return;
         setIsOpen(newOpen);
+        if (!newOpen) {
+          // Reset form and mutation state when modal closes
+          setLabel("");
+          setScope("all");
+          reset();
+        }
       }}
     >
       <div>

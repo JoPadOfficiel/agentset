@@ -7,9 +7,9 @@ import { Trash2Icon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod/v4";
 
+import { Button } from "@agentset/ui/button";
+import { DialogFooter } from "@agentset/ui/dialog";
 import {
-  Button,
-  DialogFooter,
   Form,
   FormControl,
   FormDescription,
@@ -17,8 +17,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  Input,
-} from "@agentset/ui";
+} from "@agentset/ui/form";
+import { Input } from "@agentset/ui/input";
 import { configSchema } from "@agentset/validation";
 
 import IngestConfig from "./config";
@@ -51,10 +51,12 @@ export default function UrlsForm({ onSuccess }: { onSuccess: () => void }) {
           namespaceId: namespace.id,
           urlCount: form.getValues("urls").length,
           chunkSize: doc.config?.chunkSize,
-          maxChunkSize: doc.config?.maxChunkSize,
-          chunkOverlap: doc.config?.chunkOverlap,
-          strategy: doc.config?.strategy,
-          chunkingStrategy: doc.config?.chunkingStrategy,
+          languageCode: doc.config?.languageCode,
+          forceOcr: doc.config?.forceOcr,
+          mode: doc.config?.mode,
+          disableImageExtraction: doc.config?.disableImageExtraction,
+          disableOcrMath: doc.config?.disableOcrMath,
+          useLlm: doc.config?.useLlm,
           hasMetadata: !!doc.config?.metadata,
         });
         onSuccess();
@@ -73,18 +75,17 @@ export default function UrlsForm({ onSuccess }: { onSuccess: () => void }) {
           fileUrl: url,
         })),
       },
-      config:
-        data.chunkSize ||
-        data.maxChunkSize ||
-        data.chunkOverlap ||
-        data.metadata
-          ? {
-              chunkSize: data.chunkSize,
-              maxChunkSize: data.maxChunkSize,
-              chunkOverlap: data.chunkOverlap,
-              metadata: data.metadata,
-            }
-          : undefined,
+      config: {
+        chunkSize: data.chunkSize,
+        chunkOverlap: data.chunkOverlap,
+        languageCode: data.languageCode,
+        forceOcr: data.forceOcr,
+        mode: data.mode,
+        disableImageExtraction: data.disableImageExtraction,
+        disableOcrMath: data.disableOcrMath,
+        useLlm: data.useLlm,
+        metadata: data.metadata,
+      },
     });
   };
 
