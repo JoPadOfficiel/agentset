@@ -62,17 +62,9 @@ export const createIngestJob = async ({
       type: "BATCH",
       items: finalItems,
     };
-  } else if (data.payload.type === "CRAWL") {
+  } else if (data.payload.type === "CRAWL" || data.payload.type === "YOUTUBE") {
     finalPayload = {
-      type: "CRAWL",
-      url: data.payload.url,
-      ...(data.payload.options && { options: data.payload.options }),
-    };
-  } else if (data.payload.type === "YOUTUBE") {
-    finalPayload = {
-      type: "YOUTUBE",
-      urls: data.payload.urls,
-      ...(data.payload.options && { options: data.payload.options }),
+      ...data.payload,
     };
   } else {
     const commonPayload = {
@@ -110,6 +102,37 @@ export const createIngestJob = async ({
     throw new Error("INVALID_PAYLOAD");
   }
 
+  let config = structuredClone(data.config);
+  if (
+    config &&
+    (finalPayload.type === "TEXT" ||
+      finalPayload.type === "CRAWL" ||
+      finalPayload.type === "YOUTUBE")
+  ) {
+    const fieldsToDelete: (keyof typeof config)[] = [
+      "mode",
+      "disableImageExtraction",
+      "disableImageCaptions",
+      "keepPagefooterInOutput",
+      "keepPageheaderInOutput",
+      "chartUnderstanding",
+    ];
+
+    // filter fields that are not supported for the payload type
+    for (const field of fieldsToDelete) {
+      if (config[field] !== undefined) delete config[field];
+    }
+  }
+
+  // filter deprecated fields
+  if (config?.chunkOverlap !== undefined) delete config.chunkOverlap;
+  if (config?.maxChunkSize !== undefined) delete config.maxChunkSize;
+  if (config?.chunkingStrategy !== undefined) delete config.chunkingStrategy;
+  if (config?.strategy !== undefined) delete config.strategy;
+  if (config?.disableOcrMath !== undefined) delete config.disableOcrMath;
+  if (config?.forceOcr !== undefined) delete config.forceOcr;
+  if (config?.useLlm !== undefined) delete config.useLlm;
+
   const [job] = await db.$transaction([
     db.ingestJob.create({
       data: {
@@ -117,7 +140,7 @@ export const createIngestJob = async ({
         tenantId,
         status: IngestJobStatus.QUEUED,
         name: data.name,
-        config: data.config,
+        config: config,
         externalId: data.externalId,
         payload: finalPayload,
       },
